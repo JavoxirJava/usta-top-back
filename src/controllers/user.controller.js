@@ -7,9 +7,50 @@ exports.getAll = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+exports.getAllFullInfo = async (req, res, next) => {
+    try {
+        const users = await User.findAll({
+            include: [
+                { model: Region, as: 'region', attributes: ['id', 'name'] },
+                {
+                    model: Category,
+                    as: 'categories',
+                    through: { attributes: ['id', 'price'] } // UserInfo
+                },
+                {
+                    model: Portfolio,
+                    as: 'portfolios'
+                }
+            ]
+        });
+        res.json(users);
+    } catch (e) { next(e); }
+};
+
 exports.getOne = async (req, res, next) => {
     try {
         const user = await User.findByPk(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json(user);
+    } catch (e) { next(e); }
+};
+
+exports.getOneFullInfo = async (req, res, next) => {
+    try {
+        const user = await User.findByPk(req.params.id, {
+            include: [
+                { model: Region, as: 'region', attributes: ['id', 'name'] },
+                {
+                    model: Category,
+                    as: 'categories',
+                    through: { attributes: ['id', 'price'] }
+                },
+                {
+                    model: Portfolio,
+                    as: 'portfolios'
+                }
+            ]
+        });
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (e) { next(e); }

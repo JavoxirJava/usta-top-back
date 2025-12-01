@@ -7,9 +7,36 @@ exports.getAll = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+exports.getAllFullInfo = async (req, res, next) => {
+    try {
+        const items = await Portfolio.findAll({
+            include: [
+                { model: User, as: 'user', attributes: ['id', 'first_name', 'last_name'] },
+                { model: PortfolioImage, as: 'images' },
+                { model: Comment, as: 'comments' }
+            ]
+        });
+        res.json(items);
+    } catch (e) { next(e); }
+};
+
 exports.getOne = async (req, res, next) => {
     try {
         const item = await Portfolio.findByPk(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Portfolio not found' });
+        res.json(item);
+    } catch (e) { next(e); }
+};
+
+exports.getOneFullInfo = async (req, res, next) => {
+    try {
+        const item = await Portfolio.findByPk(req.params.id, {
+            include: [
+                { model: User, as: 'user', attributes: ['id', 'first_name', 'last_name'] },
+                { model: PortfolioImage, as: 'images' },
+                { model: Comment, as: 'comments' }
+            ]
+        });
         if (!item) return res.status(404).json({ message: 'Portfolio not found' });
         res.json(item);
     } catch (e) { next(e); }
