@@ -15,6 +15,17 @@ exports.getOne = async (req, res, next) => {
     } catch (e) { next(e); }
 };
 
+exports.getUsersByRegionId = async (req, res, next) => {
+    try {
+        const region = await Region.findByPk(req.params.id, {
+            include: [{ model: User, as: 'users' }]
+        });
+        if (!region) return res.status(404).json({ message: 'Region not found' });
+        res.json(region);
+    } catch (e) { next(e); }
+};
+
+
 exports.create = async (req, res, next) => {
     try {
         const created = await Region.create(req.body);
