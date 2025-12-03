@@ -37,21 +37,23 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
-    console.log("login...");
-    
     try {
         const { email, password } = req.body;
+        console.log('[auth/login] incoming request', { email });
         if (!email || !password) {
             return res.status(400).json({ message: 'email va password majburiy' });
         }
 
         const user = await User.findOne({ where: { email } });
+        console.log('[auth/login] user lookup result', { found: !!user });
         if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
         const ok = await bcrypt.compare(password, user.password);
+        console.log('[auth/login] password check', { ok });
         if (!ok) return res.status(401).json({ message: 'Invalid credentials' });
 
         const token = generateToken(user);
+        console.log('[auth/login] success', { userId: user.id });
         res.json({ token, user });
     } catch (e) { next(e); }
 };
