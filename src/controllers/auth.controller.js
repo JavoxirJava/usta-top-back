@@ -14,9 +14,8 @@ exports.register = async (req, res, next) => {
     try {
         const { email, password, first_name, last_name, phone_number } = req.body;
 
-        if (!email || !password) {
+        if (!email || !password)
             return res.status(400).json({ message: 'email va password majburiy' });
-        }
 
         const exists = await User.findOne({ where: { email } });
         if (exists) return res.status(409).json({ message: 'Email already in use' });
@@ -29,7 +28,7 @@ exports.register = async (req, res, next) => {
             first_name,
             last_name,
             phone_number,
-            role: 'user'
+            role: 'USER'
         });
 
         const token = generateToken(user);
@@ -38,6 +37,8 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
+    console.log("login...");
+    
     try {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -53,4 +54,27 @@ exports.login = async (req, res, next) => {
         const token = generateToken(user);
         res.json({ token, user });
     } catch (e) { next(e); }
+};
+
+exports.init = async () => {
+    const email = 'ali@gmail.com';
+    const password = '123456';
+    const first_name = 'Admin';
+    const last_name = 'Admin';
+    const phone_number = '1234567890';
+    console.log('Initializing admin user...');
+
+    const exists = await User.findOne({ where: { email } });
+    if (exists) return;
+
+    const hash = await bcrypt.hash(password, 10);
+
+    await User.create({
+        email,
+        password: hash,
+        first_name,
+        last_name,
+        phone_number,
+        role: 'ADMIN'
+    });
 };
