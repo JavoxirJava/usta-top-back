@@ -1,4 +1,5 @@
 const User = require('./User');
+const Job = require('./Job');
 const Region = require('./Region');
 const Category = require('./Category');
 const UserInfo = require('./UserInfo');
@@ -24,6 +25,7 @@ Comment.belongsTo(Portfolio, { foreignKey: 'portfolio_id' });
 
 module.exports = {
     User,
+    Job,
     Region,
     Category,
     UserInfo,

@@ -1,4 +1,74 @@
 const { User } = require('../models');
+const Job = require('../models/Job');
+const Category = require('../models/Category');
+const { Op } = require('sequelize');
+exports.getDashboardStats = async (req, res) => {
+    try {
+        const role = req.user.role; // token orqali
+        let stats = {};
+        let weeklyData = [];
+        let weeklyActive = [];
+
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 6); // past 7 days
+
+        if (role === "MASTER") {
+            const totalClients = await User.count({ where: { role: "USER" } });
+            const activeJobs = await Job.count({ where: { masterId: req.user.id, status: "active" } });
+
+            stats = { totalClients, activeJobs };
+
+            // weekly chart
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date();
+                day.setDate(today.getDate() - i);
+                const dayStart = new Date(day.setHours(0, 0, 0, 0));
+                const dayEnd = new Date(day.setHours(23, 59, 59, 999));
+
+                const dailyClients = await Job.count({
+                    where: {
+                        masterId: req.user.id,
+                        createdAt: { [Op.between]: [dayStart, dayEnd] }
+                    }
+                });
+
+                const dailyActiveJobs = await Job.count({
+                    where: { masterId: req.user.id, status: "active" }
+                });
+
+                weeklyData.push({ name: day.toLocaleDateString('en-US', { weekday: 'short' }), clients: dailyClients });
+                weeklyActive.push({ name: day.toLocaleDateString('en-US', { weekday: 'short' }), jobs: dailyActiveJobs });
+            }
+
+        } else if (role === "USER") {
+            const totalMasters = await User.count({ where: { role: "MASTER" } });
+            const activeWorkers = await Category.count();
+
+            stats = { totalMasters, activeWorkers };
+
+            // weekly chart
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date();
+                day.setDate(today.getDate() - i);
+
+                const dailyMasters = await User.count({ where: { role: "MASTER" } });
+                const dailyActiveWorkers = await Category.count();
+
+                weeklyData.push({ name: day.toLocaleDateString('en-US', { weekday: 'short' }), masters: dailyMasters });
+                weeklyActive.push({ name: day.toLocaleDateString('en-US', { weekday: 'short' }), workers: dailyActiveWorkers });
+            }
+        }
+
+        res.json({ stats, weeklyData, weeklyActive });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 
 exports.getAll = async (req, res, next) => {
     try {

@@ -1,4 +1,12 @@
 const { Category } = require('../models');
+exports.getActiveWorkers = async (req, res) => {
+    try {
+        const count = await Category.countDocuments();
+        res.json({ activeWorkers: count });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
 exports.getAll = async (req, res, next) => {
     try {

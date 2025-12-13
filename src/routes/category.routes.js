@@ -7,5 +7,6 @@ router.get('/:id', ctrl.getOne);
 router.post('/', auth("ADMIN"), ctrl.create);
 router.put('/:id', auth("ADMIN"), ctrl.update);
 router.delete('/:id', auth("ADMIN"), ctrl.remove);
+router.get('/active-workers', auth("USER"), ctrl.getActiveWorkers);
 
 module.exports = router;
